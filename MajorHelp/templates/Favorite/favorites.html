@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/settings/favorites.css' %}">
+
+<div class="favorites-page-container">
+    <div class="favorites-content">
+        <div class="favorites-container">
+            <h1>Your Favorites</h1>
+
+            <div id="universities-section">
+                <h2>Universities</h2>
+                <ul class="favorites-list">
+                    {% for favorite in university_favorites %}
+                    <li class="favorite-item university-item">
+                        <a href="{% url 'MajorHelp:university-detail' slug=favorite.university.slug %}">
+                            <strong>{{ favorite.university.name }}</strong>  
+                        </a>
+                        <!-- fix recently added filter by adding a machine read time-->
+                        <p>📍 <strong>Located at</strong> {{ favorite.university.location }}</p>
+                        <p data-created="{{ favorite.created_at|date:'Y-m-d H:i:s' }}">
+                            ⭐ <strong>Added</strong> {{ favorite.created_at|timesince }} ago
+                        </p>
+                    </li>
+                    {% empty %}
+                    <li class="no-favorites">You haven't favorited any universities yet.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div id="majors-section">
+                <h2>Majors</h2>
+                <ul class="favorites-list">
+                    {% for favorite in major_favorites %}
+                    <li class="favorite-item major-item">
+                        <a href="{% url 'MajorHelp:major-detail' slug=favorite.major.slug %}">
+                            <strong>{{ favorite.major.major_name }}</strong> at {{ favorite.major.university.name }}
+                        </a>
+                        <p>🏫 <strong>Department</strong> {{ favorite.major.department }}</p>
+
+                        <p data-created="{{ favorite.created_at|date:'Y-m-d H:i:s' }}">
+                            ⭐ <strong>Added</strong> {{ favorite.created_at|timesince }} ago
+                        </p>
+                    </li>
+                    {% empty %}
+                    <li class="no-favorites">You haven't favorited any majors yet.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="filters-column">
+        <div class="filter-card">
+            <span class="filter-header">Show <span class="highlight-the">Me</span></span>
+            <div class="filter-options-group">
+                <div class="filter-option both-option">
+                    <input type="checkbox" id="show-both" checked>
+                    <label for="show-both">Both</label>
+                </div>
+                <div class="filter-option">
+                    <input type="checkbox" id="show-universities" checked>
+                    <label for="show-universities">Universities</label>
+                </div>
+                <div class="filter-option">
+                    <input type="checkbox" id="show-majors" checked>
+                    <label for="show-majors">Majors</label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="filter-card">
+            <span class="filter-header">Sort <span class="highlight-the">By</span></span>
+            <div class="filter-options-group">
+                <div class="filter-option">
+                    <input type="radio" name="sort-order" id="sort-recent-desc" checked>
+                    <label for="sort-recent-desc">Recently Added (New → Old)</label>
+                </div>
+                <div class="filter-option">
+                    <input type="radio" name="sort-order" id="sort-recent-asc">
+                    <label for="sort-recent-asc">Recently Added (Old → New)</label>
+                </div>
+                <div class="filter-option">
+                    <input type="radio" name="sort-order" id="sort-alpha-asc">
+                    <label for="sort-alpha-asc">Alphabetical (A → Z)</label>
+                </div>
+                <div class="filter-option">
+                    <input type="radio" name="sort-order" id="sort-alpha-desc">
+                    <label for="sort-alpha-desc">Alphabetical (Z → A)</label>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+<!-- 
+Rewrote the whole script so that the original filter (Majors, Universities, Both) works in combination with the new sorting options:
+- Recently Added (New → Old and Old → New)
+- Alphabetical (A → Z and Z → A)
+
+The sorting uses a hidden 'data-created' attribute with a machine-readable datetime format (Y-m-d H:i:s) to accurately sort by date added.
+Filtering and sorting are applied together and update the DOM dynamically without a full page reload.
+-->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const bothCheckbox = document.getElementById('show-both');
+    const universitiesCheckbox = document.getElementById('show-universities');
+    const majorsCheckbox = document.getElementById('show-majors');
+    const universitySection = document.getElementById('universities-section');
+    const majorSection = document.getElementById('majors-section');
+
+    function sortItems(container, type) {
+        const items = Array.from(container.querySelectorAll('.favorite-item'));
+        items.sort((a, b) => {
+            const aName = a.querySelector('a').textContent.trim().toLowerCase();
+            const bName = b.querySelector('a').textContent.trim().toLowerCase();
+            //using the data-created attribute for date-based sorting
+            const aTime = new Date(a.querySelector('p[data-created]').getAttribute('data-created'));
+            const bTime = new Date(b.querySelector('p[data-created]').getAttribute('data-created'));
+
+            if (type === 'recent-asc') return aTime - bTime;
+            if (type === 'recent-desc') return bTime - aTime;
+            if (type === 'alpha-asc') return aName.localeCompare(bName);
+            if (type === 'alpha-desc') return bName.localeCompare(aName);
+        });
+        items.forEach(item => container.appendChild(item));
+    }
+
+    function updateUI() {
+        const showUniversities = universitiesCheckbox.checked;
+        const showMajors = majorsCheckbox.checked;
+        const sortOrder = document.querySelector('input[name="sort-order"]:checked').id;
+
+        universitySection.style.display = showUniversities ? 'block' : 'none';
+        majorSection.style.display = showMajors ? 'block' : 'none';
+        bothCheckbox.checked = showUniversities && showMajors;
+
+        const sortType = sortOrder.includes('recent')
+            ? (sortOrder.endsWith('asc') ? 'recent-asc' : 'recent-desc')
+            : (sortOrder.endsWith('asc') ? 'alpha-asc' : 'alpha-desc');
+
+        if (showUniversities) sortItems(universitySection.querySelector('.favorites-list'), sortType);
+        if (showMajors) sortItems(majorSection.querySelector('.favorites-list'), sortType);
+    }
+
+    // Event bindings
+    bothCheckbox.addEventListener('change', () => {
+        universitiesCheckbox.checked = majorsCheckbox.checked = bothCheckbox.checked;
+        updateUI();
+    });
+
+    universitiesCheckbox.addEventListener('change', () => {
+        bothCheckbox.checked = universitiesCheckbox.checked && majorsCheckbox.checked;
+        updateUI();
+    });
+
+    majorsCheckbox.addEventListener('change', () => {
+        bothCheckbox.checked = universitiesCheckbox.checked && majorsCheckbox.checked;
+        updateUI();
+    });
+
+    document.querySelectorAll('input[name="sort-order"]').forEach(radio =>
+        radio.addEventListener('change', updateUI)
+    );
+
+    updateUI(); // Initial
+});
+
+// polling refresh logic
+function checkForUpdates() {
+    fetch(window.location.href)
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const newDoc = parser.parseFromString(html, 'text/html');
+            const oldCount = document.querySelectorAll('.favorite-item').length;
+            const newCount = newDoc.querySelectorAll('.favorite-item').length;
+            if (oldCount !== newCount) {
+                location.reload();
+            }
+        });
+}
+setInterval(checkForUpdates, 3000);
+
+</script>
+<!-- adds space at the bottom of the page-->
+<br>  <br>
+<br>  <br>
+
+{% endblock %}

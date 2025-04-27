@@ -1,0 +1,128 @@
+/* signup.css */
+body {
+    height: 100vh; 
+    background: linear-gradient(45deg, #4FC7CF, #15787f);
+    background-size: 300% 300%;
+    animation: gradientAnimation 6s ease infinite; 
+}
+
+/* Overall Signup Container */
+.signup-container {
+    position: relative; /* Allows absolute positioning of child elements */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    max-width: 1500px;
+    margin: 50px auto;
+    background-color: rgb(255, 255, 255);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Header Styling */
+.signup-header {
+    position: absolute; /* Position relative to .signup-container */
+    top: 20px; /* Adjust as needed to align with the first form entry */
+    left: 40px; /* Align to the left of the container */
+    transform: translateX(0); /* Remove centering */
+    text-align: left; /* Align text to the left */
+    width: auto; /* Adjust width to fit content */
+    padding-left: 20px; /* Add some padding for spacing */
+}
+
+.signup-header h1 {
+    font-size: 70px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    color: #000;
+}
+
+.signup-header .highlight {
+    color: #4FC7CF;
+}
+
+/* Adjust the form to avoid overlapping with the header */
+.signup-form {
+    margin-top: 100px; /* Add space to account for the header */
+    width: 100%;
+}
+
+/* Form Group Styling */
+.signup-form .form-group {
+    display: flex;
+    gap: 4vw;
+    width: 100%;
+}
+
+.form-section {
+    flex: 1;
+}
+
+/* Password Section Styling */
+.password-section {
+    border-left: 1px solid #dcdcdc;
+    padding-left: 20px;
+}
+
+/* Role Section Styling */
+.role-section {
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+/* Input Fields */
+.signup-form input,
+.signup-form select {
+	width: 100%;
+	padding: 10px 3.5% 10px 0px;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+	font-size: 1rem;
+}
+
+/* Confirm Button */
+.confirm-button {
+    margin-top: 20px;
+    padding: 20px 70px;
+    background-color: #4FC7CF;
+    color: #fff;
+    border: none;
+    border-radius: 25px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+    font-size: 20px;
+}
+
+.confirm-button:hover {
+    background-color: #3ea5c1;
+    transform: translateY(-3px);
+}
+
+/* Footer */
+.signup-footer {
+    margin-top: 20px;
+}
+
+.signup-footer a {
+    color: #4cc8e0;
+    text-decoration: none;
+}
+
+.signup-footer a:hover {
+    text-decoration: underline;
+}

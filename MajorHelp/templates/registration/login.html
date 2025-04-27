@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/login/login.css' %}">
+
+<div class="login-container" style="background-image: url('{% static 'images/login/logn.png' %}');">
+    <div class="login-form-wrapper">
+        <h2>Login</h2>
+        <form method="post" class="login-form">
+            {% csrf_token %}
+            
+            <!-- Username Field -->
+            <div class="input-group">
+                {{ form.username.label_tag }}
+                {{ form.username }}
+                {{ form.username.errors }}
+            </div>
+
+            <!-- Password Field with Show/Hide Button -->
+            <div class="input-group">
+                {{ form.password.label_tag }}
+                <div class="password-wrapper">
+                    {{ form.password }}
+                    <button type="button" id="toggle-password" class="toggle-password">Show Password</button>
+                </div>
+                {{ form.password.errors }}
+            </div>
+
+            <!-- Remember Me -->
+            <div class="input-group remember-me">
+                <input type="checkbox" name="remember_me" id="remember_me">
+                <label for="remember_me">Remember Me</label>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" class="btn">Login</button>
+        </form>
+
+        <!-- Links -->
+        <div class="login-links">
+            <p>Don't have an account? <a href="{% url 'MajorHelp:signup' %}">Sign up here</a></p>
+            <p><a href="{% url 'password_reset' %}">Forgot password?</a></p>
+        </div>
+    </div>
+</div>
+
+<!-- 🔥 Custom Error Modal -->
+<div id="error-overlay" class="error-overlay"></div>
+<div id="error-modal" class="error-modal">
+    <div class="modal-content">
+        <h3>Invalid Credentials</h3>
+        <p>Please check your username and password.</p>
+        <button onclick="closeErrorModal()" class="modal-close-btn">Close</button>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const togglePassword = document.getElementById("toggle-password");
+    const passwordInput = document.getElementById("id_password");
+
+    if (togglePassword && passwordInput) {
+        togglePassword.addEventListener("click", function () {
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                togglePassword.textContent = "Hide Password";
+            } else {
+                passwordInput.type = "password";
+                togglePassword.textContent = "Show Password";
+            }
+        });
+    }
+
+    // Trigger modal if form has errors
+    {% if form.errors %}
+        document.getElementById("error-modal").classList.add("active");
+        document.getElementById("error-overlay").classList.add("active");
+    {% endif %}
+});
+
+function closeErrorModal() {
+    document.getElementById("error-modal").classList.remove("active");
+    document.getElementById("error-overlay").classList.remove("active");
+}
+</script>
+{% endblock %}

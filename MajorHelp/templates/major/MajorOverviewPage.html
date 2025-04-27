@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+{% include "base.html" %}
+<html lang="en">
+<head>
+
+    {% load static %}
+    <meta charset="UTF-8">
+    <title>{{ major.major_name }}</title>
+    <link rel="stylesheet" href="{% static 'css/overview/MajorOverview.css' %}">
+</head>
+<body>
+    <a href="javascript:history.back()" class="back-button" onclick="location.reload()">Go Back</a>
+
+    <!-- Favorite button -->
+    <button id="favorite-btn" class="favorite-btn" data-object-type="major" data-object-id="{{ major.id }}">
+        {% if is_favorite %}
+            ★ Remove from Favorites
+        {% else %}
+            ☆ Add to Favorites
+        {% endif %}
+    </button>
+
+<!-- show up a litte text under favorite button telling users to login or signup if they are not -->
+    {% if not user.is_authenticated %}
+        <p class="login-link">
+            Want to save favorites? <a href="{% url 'MajorHelp:login' %}">Log in</a> 
+            or <a href="{% url 'MajorHelp:signup' %}">Sign up</a>.
+        </p>
+    {% endif %}
+
+
+    <div class="about-container">
+        <h1>{{ major.major_name }}</h1>
+        <h2>
+            <a href="{% url 'MajorHelp:university-detail' slug=major.university.slug %}">{{ major.university.name }}</a>
+        </h2>
+    </div>
+
+    <div class="description-container">
+        <h3>Description</h3>
+        <p>{{ major.major_description }}</p>
+        <h3>Concentration</h3>
+        <p>{{ major.department }}</p>
+    </div>
+
+    <div class="tuition-container">
+        <h3>Undergrad Tuition</h3>
+        <ul>
+            <li>In-State Tuition: ${{ major.in_state_min_tuition }} - ${{ major.in_state_max_tuition }}</li>
+            <li>Out-of-State Tuition: ${{ major.out_of_state_min_tuition }} - ${{ major.out_of_state_max_tuition }}</li>
+        </ul>
+        <h3>Graduate Tuition</h3>
+        <ul>
+            <li>In-State Tuition: ${{ major.grad_in_state_min_tuition }} - ${{ major.grad_in_state_max_tuition }}</li>
+            <li>Out-of-State Tuition: ${{ major.grad_out_of_state_min_tuition }} - ${{ major.grad_out_of_state_max_tuition }}</li>
+        </ul>
+    </div>
+
+    <div class="courses-container">
+        <h3>Courses</h3>
+        <ul>
+            {% for course in major.major_courses.all %}
+                <li>{{ course.course_name }}</li>
+            {% empty %}
+                <li>No courses are currently available for this major.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="university-info-container">
+        <h3>University Information</h3>
+        <p>Location: {{ major.university.location }}</p>
+        <p>Type: 
+            {% if major.university.is_public %}
+                Public
+            {% else %}
+                Private
+            {% endif %}
+        </p>
+        <h3>University Statistics</h3>
+        <ul>
+            <li>Graduation Rate: {{ major.university.GraduationRate }}%</li>
+            <li>Total Undergrad Students: {{ major.university.TotalUndergradStudents }}</li>
+            <li>Total Grad Students: {{ major.university.TotalGradStudents }}</li>
+        </ul>
+    </div>
+<!-- Form for leaving a review, visible only to logged-in users -->
+{% if user.is_authenticated %}
+    {% if user.role == 'alumni' or user.role == 'current_student' %}
+        {% if not user_review %}
+            <div class="new-post-form" style="min-height: 200px;">
+                <h6>Leave a Review:</h6>
+                <form action="{% url 'MajorHelp:create_major_review' user.username %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="major_id" value="{{ major.id }}">
+                    <textarea 
+                        class="review-input" 
+                        name="review_text" 
+                        placeholder="Leave your review..." 
+                        required
+                        style="width: 100%; height: 100px; background: #fff; color: #000; display: block; border: 1px solid #ccc; padding: 10px; border-radius: 5px; font-size: 1.25rem;">
+                    </textarea>
+                    <p></p>
+                    <button class="submit-review" type="submit">Submit Review</button>
+                </form>
+            </div>
+        {% endif %}
+    {% endif %}
+{% endif %}
+
+<!-- Display all reviews (visible to all users) -->
+<div class="review-list">
+
+    {% if user.is_authenticated %}
+        {% if user.role != 'alumni' and user.role != 'current_student' %}
+            <p11>You must be an Alumni or a Current Student to leave a review.<br></p11>
+        {% endif %}
+    {% else %}
+        <p10>Please <a href="{% url 'MajorHelp:login' %}">log in</a> to leave a review.<br></p10>
+    {% endif %}
+
+    <h9>Reviews:</h9>
+    {% if latest_post_list %}
+        <ul>
+            {% for post in latest_post_list %}
+                <li>
+                    <p5>"{{ post.review_text }}" <strong>By:</strong> {{ post.user.username }} on {{ post.pub_date }}</p5>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p6>No reviews yet. Add your own if you're a Student or Alumni!</p6>
+    {% endif %}
+</div>
+
+
+
+
+    <div class="space">
+        <p>_ </p>
+        <p>_ </p>
+        <p>_ </p>
+        <p>_ </p>
+        <p>_ </p>
+        <p>_ </p>
+    </div>
+
+    <style>
+        .space {
+            visibility: hidden !important;
+        }
+    </style>
+
+    <!-- javascript that makes sure that the favorites are 
+        marked until they are changed. So favorite pages are marked and
+        will show as the current status (added to favorites or not in favorites)
+        and be accurate
+     
+        TLDR: the below javascript shows errors it is just in how it is styled
+        that the red squiggly lines are showing for it. It still works with no issues
+    -->
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const favoriteBtn = document.getElementById('favorite-btn');
+            if (favoriteBtn) {
+                // Initialize button state based on server-side value
+                {% if is_favorite %}
+                    favoriteBtn.classList.add('favorited');
+                {% endif %}
+                
+                favoriteBtn.addEventListener('click', function() {
+                    const objectType = this.getAttribute('data-object-type');
+                    const objectId = this.getAttribute('data-object-id');
+                    
+                    fetch(`/toggle-favorite/${objectType}/${objectId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                            'Content-Type': 'application/json',
+                        },
+                        credentials: 'same-origin'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'added') {
+                            this.innerHTML = '★ Remove from Favorites';
+                            this.classList.add('favorited');
+                        } else if (data.status === 'removed') {
+                            this.innerHTML = '☆ Add to Favorites';
+                            this.classList.remove('favorited');
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+                });
+            }
+        });
+    </script>
+
+</body>
+</html>

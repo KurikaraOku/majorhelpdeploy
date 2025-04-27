@@ -1,0 +1,60 @@
+
+# Python
+*.pyc
+*.pyo
+__pycache__/
+*.pyd
+*.db
+*.egg-info/
+dist/
+build/
+eggs/
+*.egg
+MANIFEST
+venv/
+.pytest_cache/
+
+# Django
+*.log
+*.pot
+*.pyc
+*.pyo
+*.db
+media/
+staticfiles/
+__pycache__/
+*.log
+
+# temp files
+*.tmp
+*.old
+*.sync-conflict*
+temp/
+tmp/
+test_behavioral_db.sqlite3
+
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-workspace
+*.swp
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# MacOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+
+# Personal
+TODO
+LINKS
+
+db.sqlite3
+
+*.sqlite3
+!db.sqlite3.zip  # exception so the zip gets tracked
