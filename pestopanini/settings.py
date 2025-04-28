@@ -32,6 +32,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['majorhelp.onrender.com', 'localhost', '127.0.0.1']
 
+ALLOWED_HOSTS = [
+    'majorhelpdeploy.onrender.com',
+    'localhost',
+    '127.0.0.1',
+]
 
 # Application definition
 
